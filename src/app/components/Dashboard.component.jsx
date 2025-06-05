@@ -38,24 +38,51 @@ export default function Dashboard() {
 
   const checkAuthentication = useCallback(async () => {
     try {
+      console.log("Checking authentication at:", `${API_BASE_URL}${AUTH_PREFIX}/verifyAuth`);
       const response = await fetch(
         `${API_BASE_URL}${AUTH_PREFIX}/verifyAuth`,
         {
           method: "GET",
           credentials: "include",
+          headers: {
+            "Content-Type": "application/json",
+            // Adding these headers can help with CORS issues
+            "Accept": "application/json",
+          },
         }
       );
 
+      console.log("Auth response status:", response.status);
+      
       if (!response.ok) {
+        let errorMessage = "Authentication failed";
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.message || errorMessage;
+          console.error("Authentication error details:", errorData);
+        } catch (e) {
+          console.error("Could not parse error response");
+        }
+        
+        console.error(`Authentication failed (${response.status}): ${errorMessage}`);
         setIsAuthenticated(false);
         navigate("/login");
         return false;
       } else {
-        setIsAuthenticated(true);
-        return true;
+        try {
+          const data = await response.json();
+          console.log("Authentication successful:", data);
+          setIsAuthenticated(true);
+          return true;
+        } catch (e) {
+          console.error("Error parsing success response:", e);
+          // Even if parsing fails, we got a 200 OK, so consider it authenticated
+          setIsAuthenticated(true);
+          return true;
+        }
       }
     } catch (error) {
-      console.error("Authentication error:", error);
+      console.error("Authentication request error:", error.message);
       setIsAuthenticated(false);
       navigate("/login");
       return false;
