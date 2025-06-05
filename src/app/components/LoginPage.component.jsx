@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { API_BASE_URL, AUTH_PREFIX } from "../config";
+import { API_BASE_URL, AUTH_PREFIX, DEFAULT_FETCH_OPTIONS } from "../config";
 
 import {
   inputStyleLogin,
@@ -15,26 +15,45 @@ import {
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleLogin = async () => {
+    if (!email || !password) {
+      setError("Please enter both email and password");
+      return;
+    }
+    
+    setError("");
+    setIsLoading(true);
+    
     try {
       const response = await fetch(`${API_BASE_URL}${AUTH_PREFIX}/login`, {
+        ...DEFAULT_FETCH_OPTIONS,
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          ...DEFAULT_FETCH_OPTIONS.headers,
+          "Origin": window.location.origin,
         },
-        credentials: "include",
         body: JSON.stringify({ email, password }),
       });
 
       const data = await response.json();
-      console.log(data);
-      alert("Login successful!");
+      
+      if (!response.ok) {
+        setError(data.message || "Login failed. Please check your credentials.");
+        console.error("Login error:", data);
+        return;
+      }
+      
+      console.log("Login successful:", data);
       navigate("/dashboard");
     } catch (error) {
       console.error("Fetch error:", error);
-      alert("Connection error. Make sure your backend server is running.");
+      setError("Connection error. Please try again later.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -61,6 +80,22 @@ export default function LoginPage() {
         Login
       </div>
 
+      {error && (
+        <div
+          style={{
+            color: "#ff6b6b",
+            backgroundColor: "rgba(255, 255, 255, 0.8)",
+            padding: "10px 15px",
+            borderRadius: "4px",
+            marginBottom: "15px",
+            width: "300px",
+            textAlign: "center",
+          }}
+        >
+          {error}
+        </div>
+      )}
+
       <div style={inputContainerStyle}>
         <span style={labelStyle}>Email</span>
         <input
@@ -83,8 +118,16 @@ export default function LoginPage() {
         />
       </div>
 
-      <button style={buttonStyleLogin} onClick={handleLogin}>
-        Login
+      <button 
+        style={{
+          ...buttonStyleLogin,
+          opacity: isLoading ? 0.7 : 1,
+          cursor: isLoading ? "not-allowed" : "pointer"
+        }} 
+        onClick={handleLogin}
+        disabled={isLoading}
+      >
+        {isLoading ? "Logging in..." : "Login"}
       </button>
 
       <div style={linkStyle} onClick={() => navigate("/")}>

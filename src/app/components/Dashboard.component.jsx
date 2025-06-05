@@ -6,7 +6,7 @@ import Modal from "./Modal/Modal.component";
 import TaskListForm from "./TaskForm/TaskListForm.component";
 import TaskList from "./Task/TaskList.component";
 import { styles } from "./LocalComponentLibrary";
-import { API_BASE_URL, AUTH_PREFIX, TASK_PREFIX } from "../config";
+import { API_BASE_URL, AUTH_PREFIX, TASK_PREFIX, DEFAULT_FETCH_OPTIONS } from "../config";
 
 export default function Dashboard() {
   const navigate = useNavigate();
@@ -17,11 +17,8 @@ export default function Dashboard() {
   const handleLogout = async () => {
     try {
       const response = await fetch(`${API_BASE_URL}${AUTH_PREFIX}/logout`, {
+        ...DEFAULT_FETCH_OPTIONS,
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
       });
 
       if (response.ok) {
@@ -42,12 +39,11 @@ export default function Dashboard() {
       const response = await fetch(
         `${API_BASE_URL}${AUTH_PREFIX}/verifyAuth`,
         {
+          ...DEFAULT_FETCH_OPTIONS,
           method: "GET",
-          credentials: "include",
           headers: {
-            "Content-Type": "application/json",
-            // Adding these headers can help with CORS issues
-            "Accept": "application/json",
+            ...DEFAULT_FETCH_OPTIONS.headers,
+            "Origin": window.location.origin,
           },
         }
       );
@@ -98,11 +94,8 @@ export default function Dashboard() {
       const response = await fetch(
         `${API_BASE_URL}${TASK_PREFIX}/getTaskLists`,
         {
+          ...DEFAULT_FETCH_OPTIONS,
           method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
         }
       );
 
@@ -126,11 +119,8 @@ export default function Dashboard() {
       const response = await fetch(
         `${API_BASE_URL}${TASK_PREFIX}/createTaskList`,
         {
+          ...DEFAULT_FETCH_OPTIONS,
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          credentials: "include",
           body: JSON.stringify(taskData),
         }
       );
@@ -156,8 +146,8 @@ export default function Dashboard() {
     const response = await fetch(
       `${API_BASE_URL}${TASK_PREFIX}/deleteTaskList?id=${taskId}`,
       {
+        ...DEFAULT_FETCH_OPTIONS,
         method: "DELETE",
-        credentials: "include",
       }
     );
     const data = await response.json();
