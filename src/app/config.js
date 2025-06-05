@@ -4,7 +4,7 @@ const isDevelopment = process.env.NODE_ENV === 'development';
 // Use the remote API if not in development mode, otherwise use localhost
 const API_BASE_URL = isDevelopment
   ? 'http://localhost:3000'
-  : 'https://todo-backend-8vad.vercel.app/';
+  : 'https://todo-backend-8vad.vercel.app';
 
 // API Route Prefixes
 const AUTH_PREFIX = '/api/v1';
